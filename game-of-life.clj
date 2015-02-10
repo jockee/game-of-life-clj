@@ -9,7 +9,7 @@
 (def board-cols 10)
 (def board-rows 10)
 
-(defn alive-in-next-gen? [board, row, col]
+(defn alive-in-next-gen? [board row col]
   (let [alive (get-in board [row col])
         live-neighbour-count (->>
                               relative-neighbour-positions
@@ -41,7 +41,7 @@
                          (fn [acc [row col]]
                           (assoc-in acc [row col] (alive-in-next-gen? board row col)))
                          board
-                         cells)]
+                         (cells))]
     (do
       (doall (map println (row-output updated-board)))
       (Thread/sleep sleep)
@@ -52,5 +52,4 @@
     (tick seed)))
 
 (game-of-life)
-
 
