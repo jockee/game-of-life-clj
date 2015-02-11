@@ -23,11 +23,14 @@
           (repeatedly
             #(< (rand 1) live-percentage))))))))
 
-(defn row-output [board]
-  (map
-    (fn [row] (clojure.string/join
-                (map #(if (identity %) "O" " ") row)))
-    board))
+(defn print-board [board]
+  (let [row-output (fn [board]
+                     (map
+                      (fn [row] (clojure.string/join
+                                  (map #(if (identity %) "O" " ") row)))
+                      board))]
+  (print (apply str (take padding (repeat "\n"))))
+  (doall (map println (row-output board)))))
 
 (defn alive-in-next-gen? [board row_idx col_idx]
   (let [alive? (get-in board [row_idx col_idx])
@@ -51,8 +54,7 @@
                                 (alive-in-next-gen? board row_idx col_idx))
                               row))
                           board))]
-    (print (apply str (take padding (repeat "\n"))))
-    (doall (map println (row-output updated-board)))
+    (print-board updated-board)
     (Thread/sleep sleep)
     (tick updated-board)))
 
