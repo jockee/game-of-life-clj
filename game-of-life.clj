@@ -1,4 +1,5 @@
-(ns game-of-life)
+(ns game-of-life
+  (:require [clojure.walk]))
 
 (def relative-neighbour-positions [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]])
 (def sleep 300)
@@ -6,21 +7,18 @@
 (def board-rows 30)
 (def live-percentage 0.1)
 
-(defn alive-in-next-gen? [board row col]
-  (let [alive (get-in board [row col])
+(defn alive-in-next-gen? [board row_idx col_idx]
+  (let [alive (get-in board [row_idx col_idx])
         live-neighbour-count (->>
                               relative-neighbour-positions
                               (map
                                 (fn [[relrow relcol]]
-                                  (get-in board [(+ relrow row) (+ relcol col)])))
+                                  (get-in board [(+ relrow row_idx) (+ relcol col_idx)])))
                               (filter identity)
                               (count))]
     (or
       (and alive (some #{live-neighbour-count} [2 3]))
       (and (not alive) (= live-neighbour-count 3)))))
-
-(defn cells []
-  (for [x (range 0 30) y (range 0 100)] (list x y)))
 
 (defn row-output [board]
   (map
@@ -33,23 +31,35 @@
             row)))
         board))
 
+(defn deep-vectorize [col]
+  (clojure.walk/postwalk
+    (fn [x] (if (coll? x)
+              (into [] x)
+              x))
+    col))
+
 (defn tick [board]
-  (let [updated-board (reduce
-                         (fn [acc [row col]]
-                          (assoc-in acc [row col] (alive-in-next-gen? board row col)))
-                         board
-                         (cells))]
-    (do
-      (print "\n\n\n\n\n\n\n")
-      (doall
-        (map println (row-output updated-board)))
-      (Thread/sleep sleep)
-      (tick updated-board))))
+  (let [updated-board (deep-vectorize
+                        (map-indexed
+                          (fn [row_idx row]
+                            (map-indexed
+                              (fn [col_idx _]
+                                (alive-in-next-gen? board row_idx col_idx))
+                              row))
+                          board))]
+    (print "\n\n\n\n\n\n\n")
+    (doall
+      (map println (row-output updated-board)))
+    (Thread/sleep sleep)
+    (tick updated-board)))
 
 (defn game-of-life []
-  (let [seed (into [] (take board-rows
-                            (repeatedly
-                              (fn [] (into [] (take board-cols (repeatedly #(< (rand 1) 0.1))))))))]
+  (let [seed (deep-vectorize
+               (take board-rows
+                  (repeatedly
+                    (fn [] (take board-cols
+                      (repeatedly
+                        #(< (rand 1) live-percentage)))))))]
     (tick seed)))
 
 (game-of-life)
