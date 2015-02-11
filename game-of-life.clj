@@ -15,6 +15,14 @@
               x))
     col))
 
+(defn seed []
+  (deep-vectorize
+   (take board-rows
+      (repeatedly
+        (fn [] (take board-cols
+          (repeatedly
+            #(< (rand 1) live-percentage))))))))
+
 (defn row-output [board]
   (map
     (fn [row] (clojure.string/join
@@ -48,13 +56,4 @@
     (Thread/sleep sleep)
     (tick updated-board)))
 
-(defn game-of-life []
-  (let [seed (deep-vectorize
-               (take board-rows
-                  (repeatedly
-                    (fn [] (take board-cols
-                      (repeatedly
-                        #(< (rand 1) live-percentage)))))))]
-    (tick seed)))
-
-(game-of-life)
+(tick (seed))
