@@ -8,6 +8,19 @@
 (def live-percentage 0.1)
 (def padding 10)
 
+(defn deep-vectorize [col]
+  (clojure.walk/postwalk
+    (fn [x] (if (coll? x)
+              (into [] x)
+              x))
+    col))
+
+(defn row-output [board]
+  (map
+    (fn [row] (clojure.string/join
+                (map #(if (identity %) "O" " ") row)))
+    board))
+
 (defn alive-in-next-gen? [board row_idx col_idx]
   (let [alive? (get-in board [row_idx col_idx])
         live-neighbour-count (->>
@@ -20,24 +33,6 @@
     (or
       (and alive? (some #{live-neighbour-count} [2 3]))
       (and (not alive?) (= live-neighbour-count 3)))))
-
-(defn row-output [board]
-  (map
-    (fn [row]
-        (clojure.string/join
-          (map
-            (fn [cell] (if (identity cell)
-              "O"
-              " "))
-            row)))
-        board))
-
-(defn deep-vectorize [col]
-  (clojure.walk/postwalk
-    (fn [x] (if (coll? x)
-              (into [] x)
-              x))
-    col))
 
 (defn tick [board]
   (let [updated-board (deep-vectorize
