@@ -5,11 +5,12 @@
   (:require [clojure.math.combinatorics :as combo]))
 
 (def relative-neighbour-positions [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]])
-(def sleep 500)
-(def board-cols 10)
-(def board-rows 10)
+(def sleep 300)
+(def board-cols 100)
+(def board-rows 30)
+(def live-percentage 0.1)
 
-(defn alive-in-next-gen? [board row col]
+(defn alive-in-next-gen? [board, row, col]
   (let [alive (get-in board [row col])
         live-neighbour-count (->>
                               relative-neighbour-positions
@@ -43,13 +44,20 @@
                          board
                          (cells))]
     (do
-      (doall (map println (row-output updated-board)))
+      (prn "-")
+      (doall
+        (map println (row-output updated-board)))
       (Thread/sleep sleep)
       (tick updated-board))))
 
 (defn game-of-life []
-  (let [seed [1 1]]
+  (let [seed (into []
+              (for [_ (range 0 board-rows)
+                :let [y (into []
+                          (for [_ (range 0 board-cols)
+                            :let [x (< (rand 1) live-percentage)]]
+                            x))]]
+                y))]
     (tick seed)))
 
 (game-of-life)
-
