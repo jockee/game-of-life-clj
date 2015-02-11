@@ -6,6 +6,7 @@
 (def board-cols 100)
 (def board-rows 30)
 (def live-percentage 0.1)
+(def padding 10)
 
 (defn alive-in-next-gen? [board row_idx col_idx]
   (let [alive (get-in board [row_idx col_idx])
@@ -47,9 +48,8 @@
                                 (alive-in-next-gen? board row_idx col_idx))
                               row))
                           board))]
-    (print "\n\n\n\n\n\n\n")
-    (doall
-      (map println (row-output updated-board)))
+    (print (apply str (take padding (repeat "\n"))))
+    (doall (map println (row-output updated-board)))
     (Thread/sleep sleep)
     (tick updated-board)))
 
