@@ -9,7 +9,7 @@
 (def padding 10)
 
 (defn alive-in-next-gen? [board row_idx col_idx]
-  (let [alive (get-in board [row_idx col_idx])
+  (let [alive? (get-in board [row_idx col_idx])
         live-neighbour-count (->>
                               relative-neighbour-positions
                               (map
@@ -18,8 +18,8 @@
                               (filter identity)
                               (count))]
     (or
-      (and alive (some #{live-neighbour-count} [2 3]))
-      (and (not alive) (= live-neighbour-count 3)))))
+      (and alive? (some #{live-neighbour-count} [2 3]))
+      (and (not alive?) (= live-neighbour-count 3)))))
 
 (defn row-output [board]
   (map
